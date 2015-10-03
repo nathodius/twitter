@@ -24,6 +24,11 @@ backlog = 1 # One client will be conencting to the server
 size = 1024
 LED_PORT = 12 # GPIO pin 18
 
+# Setup GPIO as output
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(LED_PORT, GPIO.OUT)
+GPIO.output(LED_PORT, GPIO.LOW)
+
 s = None
 try:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Uses IPv4 and TCP
@@ -55,12 +60,12 @@ while True:
      	GPIO.output(LED_PORT, GPIO.HIGH)
 	conn.send(data + 'received!')
 
-     else if data == 'LEDOFF':
+     elif data == 'LEDOFF':
      	GPIO.output(LED_PORT, GPIO.LOW)
 	conn.send(data + 'received!')
 
-     else if data == 'LEDFLASH':
-     	t=Thread(target=led_flash, args=(,))
+     elif data == 'LEDFLASH':
+     	t=Thread(target=led_flash, args=())
 	t.start()
 	conn.send('Flash that LED!')
      else:
