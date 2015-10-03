@@ -4,19 +4,25 @@
 Client Raspberry Pi: RPi1
 """
 
+import time
+from twython import Twython
 from twython import TwythonStreamer
 import socket
 import sys
 
-# Begin socket configuarion
+# Begin Twitter stream configuration.
 
-host = '172.31.105.225'
+# Search terms
+TERMS = '@nathodius'
+
+host = '10.0.0.134'
 port = 50000
 size = 1024
 s = None
 
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)
     s.connect((host,port))
 except socket.error, (value, message):
     if s: 
@@ -24,37 +30,77 @@ except socket.error, (value, message):
     print "Could not open socket: " + message
     sys.exit(1)
 
-# End socket configuration
+s.send('LEDFLASH')
+data = s.recv(size)
+s.close()
+s.close()
+print 'Received:', data
 
-# Begin Twitter stream configuration.
+# def connectToHost(ip):
+#     # Begin socket configuarion
 
-# Search terms
-TERMS = '#___test___'
+#     host = ip
 
-# Twitter application authentication
-APP_KEY = 'unNmv51PCE2eVPOQluDFM2OSH'
-APP_SECRET = 'IugneaTKwmTygdr0oYpHnAvrWGCVyCix1ezPj8jvg8W0mVPrHH'
-OAUTH_TOKEN = '192687808-79frLMJTsz3ogb2vFJdRZH7gEovCcvTlwZ315i0T'
-OAUTH_TOKEN_SECRET = 'TzWz8QUolxaUPgt0G0DYmILMqPiTbfSeL67dnwRAcvGpB'
+#     try:
+#         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#         s.settimeout(5)
+#         s.connect((host,port))
+#     except socket.error, (value, message):
+#         if s: 
+#             s.close()
+#         print "Could not open socket: " + message
+#         sys.exit(1)
 
-# Setup callbacks from Twython Streamer
-class TweetStreamer(TwythonStreamer):
-        def on_success(self, data):
-                if 'text' in data:
-                        print data['text'].encode('utf-8')
-                        s.send('Blink')
+# # # End socket configuration
 
-        def on_error(self, status_code, data):
-            print status_code
-            self.disconnect()
+# def sendCommand(command):
+#     parsedCommand = command.split('_')
+#     byte1 = parsedCommand[1]
+#     byte2 = parsedCommand[2]
+#     byte3 = parsedCommand[3]
+#     byte4 = parsedCommand[4]
+#     gpioCommand = parsedCommand[5]
+#     host = byte1 + '.' + byte2 + '.' + byte3 + '.' + byte4
+#     print host
+#     connectToHost(host)
+#     s.send(gpioCommand)
 
-# Create streamer
-try:
-        stream = TweetStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-        stream.statuses.filter(track=TERMS)
-except KeyboardInterrupt:
-        print '\ndone'
-        s.close()
+# #Twitter application authentication
+# APP_KEY = 'unNmv51PCE2eVPOQluDFM2OSH'
+# APP_SECRET = 'IugneaTKwmTygdr0oYpHnAvrWGCVyCix1ezPj8jvg8W0mVPrHH'
+# OAUTH_TOKEN = '192687808-79frLMJTsz3ogb2vFJdRZH7gEovCcvTlwZ315i0T'
+# OAUTH_TOKEN_SECRET = 'TzWz8QUolxaUPgt0G0DYmILMqPiTbfSeL67dnwRAcvGpB'
+
+# # #Setup callbacks from Twython Streamer
+# class TweetStreamer(TwythonStreamer):
+#         def on_success(self, data):
+#                 if 'text' in data:
+#                         txt = data['text'].encode('utf-8')
+#                         words = txt.split()
+#                         print words
+#                         for word in words:
+#                             if word.starswith('#'):
+#                                 print word
+#                         #s.send('Blink')
+
+#         def on_error(self, status_code, data):
+#             print status_code
+#             self.disconnect()
+
+# try:
+#         stream = TweetStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+#         stream.statuses.filter(track=TERMS)
+#         # while True:
+#         #     user_timeline = t.get_mentions_timeline(count=1)
+#         #     for tweet in user_timeline:
+#         #         if '#ECE4564' in tweet['text'].encode('utf-8'):
+#         #             print 'getting a command'
+#         #             command = tweet['text'].encode('utf-8')
+#         #             sendCommand(command)
+#         #     time.sleep(5)
+# except KeyboardInterrupt:
+#         #s.close()
+#         print 'KeyboardInterrupt'
 
 # End Twitter stream configuration
 
