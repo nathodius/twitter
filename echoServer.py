@@ -10,11 +10,16 @@ Assignment 1
 """
 
 import socket
+import time
+import RPi.GPIO as GPIO
+from twython import TwythonStreamer
 
 host = ''
 port = 50000
 backlog = 1 # One client will be conencting to the server
 size = 1024
+#TERMS = '#'
+#LED = 22
 
 s = None
 try:
