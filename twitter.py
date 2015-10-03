@@ -5,6 +5,28 @@ Client Raspberry Pi: RPi1
 """
 
 from twython import TwythonStreamer
+import socket
+import sys
+
+# Begin socket configuarion
+
+host = '172.31.105.225'
+port = 50000
+size = 1024
+s = None
+
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host,port))
+except socket.error, (value, message):
+    if s: 
+        s.close()
+    print "Could not open socket: " + message
+    sys.exit(1)
+
+# End socket configuration
+
+# Begin Twitter stream configuration.
 
 # Search terms
 TERMS = '#___test___'
@@ -20,6 +42,7 @@ class TweetStreamer(TwythonStreamer):
         def on_success(self, data):
                 if 'text' in data:
                         print data['text'].encode('utf-8')
+                        s.send('Blink')
 
         def on_error(self, status_code, data):
             print status_code
@@ -30,4 +53,9 @@ try:
         stream = TweetStreamer(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
         stream.statuses.filter(track=TERMS)
 except KeyboardInterrupt:
-        print 'done'
+        print '\ndone'
+        s.close()
+
+# End Twitter stream configuration
+
+
