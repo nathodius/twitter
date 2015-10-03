@@ -16,6 +16,7 @@
 import socket
 import time
 import RPi.GPIO as GPIO
+from threading import Thread
 
 host = ''
 port = 50000
@@ -27,33 +28,43 @@ s = None
 try:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Uses IPv4 and TCP
 	s.bind((host,port))
-	s.listen(backlog) 
 except socet.error, (value, message):
 	if s:
 		s.close()
 	print "Could not open socket: " + message
 	sys.exit(1)
 
+print 'Socket successfully created and binded.'
+
+def led_flash():
+	GPIO.output(LED_PORT, GPIO.HIGH)
+	time.sleep(0.5) #Blocking call
+	GPIO.output(LED_PORT, GPIO.LOW)
+
+# Start listening on socket
+s.listen(backlog)
+print 'Socket is listening...'
+
 # Infinite loop reads a message from client and echos it back
-while 1:
+while True:
+     # Wait to accept a connection; blocking call
      # conn is a new socket object used to communicate with the client
      conn, addr = s.accept() 
      data = conn.recv(1024)
      if data == 'LEDON':
-     	  GPIO.output(LED_PORT, GPIO.HIGH)
-	  conn.send(data + 'received!')
+     	GPIO.output(LED_PORT, GPIO.HIGH)
+	conn.send(data + 'received!')
 
      else if data == 'LEDOFF':
-     	  GPIO.output(LED_PORT, GPIO.LOW)
-	  conn.send(data + 'received!')
+     	GPIO.output(LED_PORT, GPIO.LOW)
+	conn.send(data + 'received!')
 
      else if data == 'LEDFLASH':
-     	  GPIO.output(LED_PORT, GPIO.HIGH)
-	  time.sleep(0.5) # Blocking call
-	  GPIO.output(LED_PORT, GPIO.LOW)
-	  conn.send('Huzzah! LED is flashing!')
+     	t=Thread(target=led_flash, args=(,))
+	t.start()
+	conn.send('Flash that LED!')
      else:
-     	  conn.send('Invalid GPIO instruction.')
+     	  conn.send('Invalid GPIO instruction or data not received.')
 
           #conn.send(data)
           #print data
