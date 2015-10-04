@@ -15,39 +15,6 @@ import sys
 # Search terms
 TERMS = '@nathodius'
 
-# try:
-#     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#     s.settimeout(5)
-#     s.connect((host,port))
-# except socket.error, (value, message):
-#     if s: 
-#         s.close()
-#     print "Could not open socket: " + message
-#     sys.exit(1)
-
-# s.send('LEDFLASH')
-# data = s.recv(size)
-# s.close()
-# s.close()
-# print 'Received:', data
-
-# def connectToHost(ip):
-#     # Begin socket configuarion
-
-#     host = ip
-
-#     try:
-#         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#         s.settimeout(5)
-#         s.connect((host,port))
-#     except socket.error, (value, message):
-#         if s: 
-#             s.close()
-#         print "Could not open socket: " + message
-#         sys.exit(1)
-
-# # End socket configuration
-
 #Twitter application authentication
 APP_KEY = 'unNmv51PCE2eVPOQluDFM2OSH'
 APP_SECRET = 'IugneaTKwmTygdr0oYpHnAvrWGCVyCix1ezPj8jvg8W0mVPrHH'
@@ -83,29 +50,32 @@ def sendCommand(command):
     except socket.error, (value, message):
         if s: 
             s.close()
-        print "Could not open socket: " + message
+        print 'Could not open socket: ' + message
         sys.exit(1)
 
     s.send(gpioCommand)
+    print 'Sent ' + gpioCommand + 'to the client.'
 
     data = s.recv(size)
 
-    print 'Received:', data
-    tweetAck(command)
+    print 'Received from client:', data
+    try: 
+        tweetAck(command)
+        print 'Tweeted ACK to @VTNetApps'
+    except:
+        print 'duplicate tweet'
 
     s.send('closing socket')
-    s.close()
 
 # #Setup callbacks from Twython Streamer
 class TweetStreamer(TwythonStreamer):
         def on_success(self, data):
                 if 'text' in data:
                         txt = data['text'].encode('utf-8')
-                        print txt
                         words = txt.split()
-                        print words
                         for word in words:
                             if word.startswith('#'):
+                                print 'Received from Twitter: ' + txt
                                 sendCommand(word)
 
         def on_error(self, status_code, data):
